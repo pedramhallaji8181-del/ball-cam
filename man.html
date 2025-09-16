@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>گوی قابل حرکت با دوربین</title>
+<style>
+  body { margin: 0; overflow: hidden; font-family: sans-serif; background: #f0f0f0; }
+  #gameCanvas { background: #fff; display: block; margin: 0 auto; touch-action: none; }
+  #cameraVideo { position: absolute; top: 10px; right: 10px; width: 150px; border: 2px solid #333; border-radius: 8px; display: none; }
+  #permissionBtn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                   padding: 15px 30px; font-size: 18px; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<canvas id="gameCanvas" width="400" height="400"></canvas>
+<video id="cameraVideo" autoplay playsinline></video>
+<button id="permissionBtn">فعال کردن حرکت گوی و دوربین</button>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const ball = { x: 200, y: 200, radius: 30, color: 'red' };
+let dragging = false;
+let permissionGranted = false;
+
+// رسم اولیه گوی
+function drawBall() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.beginPath();
+    ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+    ctx.fillStyle = ball.color;
+    ctx.fill();
+}
+drawBall();
+
+// رویدادهای حرکت گوی فقط بعد از اجازه
+function enableMovement() {
+    // ماوس
+    canvas.addEventListener('mousedown', e => {
+        if(!permissionGranted) return;
+        const dx = e.offsetX - ball.x;
+        const dy = e.offsetY - ball.y;
+        if (Math.sqrt(dx*dx + dy*dy) < ball.radius) dragging = true;
+    });
+    canvas.addEventListener('mousemove', e => {
+        if(!permissionGranted) return;
+        if (dragging) { ball.x = e.offsetX; ball.y = e.offsetY; drawBall(); }
+    });
+    canvas.addEventListener('mouseup', () => dragging = false);
+    canvas.addEventListener('mouseleave', () => dragging = false);
+
+    // لمس
+    canvas.addEventListener('touchstart', e => {
+        if(!permissionGranted) return;
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+        const dx = x - ball.x;
+        const dy = y - ball.y;
+        if (Math.sqrt(dx*dx + dy*dy) < ball.radius) dragging = true;
+    });
+    canvas.addEventListener('touchmove', e => {
+        if(!permissionGranted) return;
+        if (dragging) {
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            ball.x = touch.clientX - rect.left;
+            ball.y = touch.clientY - rect.top;
+            drawBall();
+        }
+    });
+    canvas.addEventListener('touchend', () => dragging = false);
+}
+
+// دکمه درخواست اجازه کلی
+document.getElementById('permissionBtn').addEventListener('click', async () => {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const video = document.getElementById('cameraVideo');
+        video.srcObject = stream;
+        video.style.display = 'block';
+
+        // اجازه حرکت گوی هم داده شد
+        permissionGranted = true;
+        enableMovement();
+
+        // دکمه مخفی شود
+        document.getElementById('permissionBtn').style.display = 'none';
+    } catch (err) {
+        alert('دسترسی به دوربین رد شد.');
+    }
+});
+</script>
+
+</body>
+</html>
