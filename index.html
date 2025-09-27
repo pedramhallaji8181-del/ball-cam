@@ -1,99 +1,51 @@
 <!DOCTYPE html>
 <html lang="fa">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>گوی قابل حرکت با دوربین</title>
-<style>
-  body { margin: 0; overflow: hidden; font-family: sans-serif; background: #f0f0f0; }
-  #gameCanvas { background: #fff; display: block; margin: 0 auto; touch-action: none; }
-  #cameraVideo { position: absolute; top: 10px; right: 10px; width: 150px; border: 2px solid #333; border-radius: 8px; display: none; }
-  #permissionBtn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-                   padding: 15px 30px; font-size: 18px; cursor: pointer; }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ارسال رزومه ساده</title>
+  <style>
+    body{font-family:tahoma,arial;background:#f5f5f5;padding:20px}
+    .card{max-width:640px;margin:20px auto;background:#fff;padding:18px;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+    label{display:block;margin-top:10px}
+    input,textarea{width:100%;padding:8px;margin-top:6px;border:1px solid #ccc;border-radius:4px}
+    button{margin-top:12px;padding:10px 16px;border:none;border-radius:6px;background:#2b6cb0;color:#fff;cursor:pointer}
+    small{color:#666}
+  </style>
 </head>
 <body>
+  <div class="card">
+    <h3>فرم ارسال رزومه</h3>
 
-<canvas id="gameCanvas" width="400" height="400"></canvas>
-<video id="cameraVideo" autoplay playsinline></video>
-<button id="permissionBtn">فعال کردن حرکت گوی و دوربین</button>
+    <!-- اینجا ایمیل شخصی تو قرار داده شده -->
+    <form action="https://formsubmit.co/pedramhallaji8181@gmail.com" method="POST" enctype="multipart/form-data">
+      <label>نام و نام خانوادگی
+        <input type="text" name="name" required />
+      </label>
 
-<script>
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-const ball = { x: 200, y: 200, radius: 30, color: 'red' };
-let dragging = false;
-let permissionGranted = false;
+      <label>ایمیل فرستنده (اختیاری)
+        <input type="email" name="email" />
+      </label>
 
-// رسم اولیه گوی
-function drawBall() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.beginPath();
-    ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-    ctx.fillStyle = ball.color;
-    ctx.fill();
-}
-drawBall();
+      <label>متن رزومه
+        <textarea name="message" rows="6" required></textarea>
+      </label>
 
-// رویدادهای حرکت گوی فقط بعد از اجازه
-function enableMovement() {
-    // ماوس
-    canvas.addEventListener('mousedown', e => {
-        if(!permissionGranted) return;
-        const dx = e.offsetX - ball.x;
-        const dy = e.offsetY - ball.y;
-        if (Math.sqrt(dx*dx + dy*dy) < ball.radius) dragging = true;
-    });
-    canvas.addEventListener('mousemove', e => {
-        if(!permissionGranted) return;
-        if (dragging) { ball.x = e.offsetX; ball.y = e.offsetY; drawBall(); }
-    });
-    canvas.addEventListener('mouseup', () => dragging = false);
-    canvas.addEventListener('mouseleave', () => dragging = false);
+      <label>آپلود فایل (عکس یا PDF)
+        <input type="file" name="attachment" accept="image/*,application/pdf" />
+        <small>فایل‌های پیوست بعد از اولین تأیید فعال می‌شوند.</small>
+      </label>
 
-    // لمس
-    canvas.addEventListener('touchstart', e => {
-        if(!permissionGranted) return;
-        const touch = e.touches[0];
-        const rect = canvas.getBoundingClientRect();
-        const x = touch.clientX - rect.left;
-        const y = touch.clientY - rect.top;
-        const dx = x - ball.x;
-        const dy = y - ball.y;
-        if (Math.sqrt(dx*dx + dy*dy) < ball.radius) dragging = true;
-    });
-    canvas.addEventListener('touchmove', e => {
-        if(!permissionGranted) return;
-        if (dragging) {
-            const touch = e.touches[0];
-            const rect = canvas.getBoundingClientRect();
-            ball.x = touch.clientX - rect.left;
-            ball.y = touch.clientY - rect.top;
-            drawBall();
-        }
-    });
-    canvas.addEventListener('touchend', () => dragging = false);
-}
+      <!-- می‌تونی کاربر رو بعد از ارسال به صفحه تشکر ببری -->
+      <!-- <input type="hidden" name="_next" value="https://your-website.com/thanks.html"> -->
 
-// دکمه درخواست اجازه کلی
-document.getElementById('permissionBtn').addEventListener('click', async () => {
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        const video = document.getElementById('cameraVideo');
-        video.srcObject = stream;
-        video.style.display = 'block';
+      <button type="submit">ارسال به ایمیل من</button>
+    </form>
 
-        // اجازه حرکت گوی هم داده شد
-        permissionGranted = true;
-        enableMovement();
-
-        // دکمه مخفی شود
-        document.getElementById('permissionBtn').style.display = 'none';
-    } catch (err) {
-        alert('دسترسی به دوربین رد شد.');
-    }
-});
-</script>
-
+    <p style="margin-top:10px;color:#555">
+      🔹 بار اول که فرم پر میشه، یک ایمیل تأیید از <b>formsubmit.co</b> برات میاد. فقط یک بار روی لینک تأیید کلیک کن.  
+      بعد از اون همه اطلاعات مستقیم به اینباکست میاد.
+    </p>
+  </div>
 </body>
 </html>
